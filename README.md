@@ -23,8 +23,8 @@ npm test
 -------------------
 
 1.	[组件](./src/components)
-2.	[入口](./src/libs/entry.jsx)
-3.	[html模版](./src/libs/index.html)
+2.	[入口](./src/entry.jsx)
+3.	[html模版](./src/index.html)
 4.	[测试文件](./test)
 
 
