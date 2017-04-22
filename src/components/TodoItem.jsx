@@ -1,51 +1,29 @@
 import React from 'react';
+import { connect } from 'react-redux';
 // import ReactDOM from 'react-dom';
 import { Button, Input } from 'antd';
 
 class TodoItem extends React.Component {
-  constructor() {
-    super();
-    this.handlerChange = this.handlerChange.bind(this);
-    this.handlerDelete = this.handlerDelete.bind(this);
-    this.handlerChangeText = this.handlerChangeText.bind(this);
-  }
-  handlerChange() {
-    const isDone = !this.props.isDone;
-  //  this.input.disable = isDone;
-    this.props.changeTodoState(this.props.index, isDone);
-  }
-  handlerDelete() {
-    this.props.deleteTodo(this.props.index);
-  }
-  handlerChangeText(event) {
-    let value = this.props.text;
-    if (event.keyCode === 13) {
-      value = event.target.value;
-      if (!value) return false;
-    }
-    this.props.changeTodoText(this.props.index, value);
-    return true;
-  }
-
   render() {
-    const className = this.props.isDone ? 'task-done' : '';
+    const { handlerChange, handlerChangeText, handlerDelete, isDone, text } = this.props;
+    const className = isDone ? 'task-done' : '';
     return (
       <li className="todo-item">
         <Button
           className="changeButton"
           ref={(node) => { this.changeButton = node; }} size="large"
-          onClick={this.handlerChange}
+          onClick={handlerChange}
         />
-        <span className={`${className}`}> {this.props.text} </span>
+        <span className={`${className}`}> {text} </span>
         <Input
           style={{ width: 200 }} ref={(node) => { this.input = node; }}
-          disabled={!this.props.isDone}
-          onKeyUp={this.handlerChangeText} type="text" placeholder="in put name"
+          disabled={!isDone}
+          onKeyUp={handlerChangeText} type="text" placeholder="in put name"
         />
         <Button
           className="deleteButton"
           ref={(node) => { this.deleteButton = node; }} type="danger" size="large"
-          onClick={this.handlerDelete}
+          onClick={handlerDelete}
         />
       </li>
     );
@@ -54,17 +32,85 @@ class TodoItem extends React.Component {
 
 
 TodoItem.propTypes = {
+  handlerChange: React.PropTypes.func.isRequired,
+  handlerChangeText: React.PropTypes.func.isRequired,
+  handlerDelete: React.PropTypes.func.isRequired,
   isDone: React.PropTypes.bool,
   text: React.PropTypes.string,
-  changeTodoState: React.PropTypes.func.isRequired,
-  index: React.PropTypes.number,
-  deleteTodo: React.PropTypes.func.isRequired,
-  changeTodoText: React.PropTypes.func.isRequired,
+  //index: React.PropTypes.number,
+
 };
 TodoItem.defaultProps = {
   isDone: false,
   text: '',
-  index: 0,
+//  index: 0,
 };
 
-export default TodoItem;
+// Action
+// const deleteAction = {
+//   type: 'deleteTodo',
+// };
+// const changeAction = {
+//   type: 'changeTodoText',
+// };
+
+// Action Creater
+function deleteTodo(index) {
+  return {
+    type: 'deleteTodo',
+    index,
+  };
+}
+
+function changeTodoText(index, value) {
+  return {
+    type: 'changeTodoText',
+    index,
+    value,
+  };
+}
+
+function changeTodoState(index, isDone) {
+  return {
+    type: 'changeTodoState',
+    index,
+    isDone,
+  };
+}
+
+// Map Redux state to component props
+// function mapStateToProps(state) {
+//   return {
+//     todos: state.todos,
+//   };
+// }
+// Map Redux action to component props
+function mapDispatchToProps(dispatch, ownProps) {
+  return {
+    handlerChangeText: (event) => {
+      // enter 键的keyCode是13
+      let value = ownProps.text;
+      if (event.keyCode === 13) {
+        value = event.target.value;
+        if (!value) return false;
+
+        event.target.value = '';
+        return dispatch(changeTodoText(ownProps.index, value));
+      }
+      return true;
+    },
+    handlerChange: () => {
+      console.log(ownProps);
+      const isDone = !ownProps.isDone;
+      return dispatch(changeTodoState(ownProps.index, isDone));
+    },
+    handlerDelete: () => {
+      dispatch(deleteTodo(ownProps.index));
+    },
+  };
+}
+const TodoItemController = connect(
+  null, mapDispatchToProps,
+)(TodoItem);
+
+export default TodoItemController;
